@@ -1,12 +1,11 @@
 from collections import Counter
-from typing import List, Optional, Dict
 from pathlib import Path
+from typing import Dict, List, Optional, Set
 
 import numpy as np
-from tqdm import tqdm
-
-import plotly.express as px
 import pandas as pd
+import plotly.express as px
+from tqdm import tqdm
 
 from presidio_evaluator import InputSample
 from presidio_evaluator.evaluation import EvaluationResult, ModelError
@@ -20,6 +19,7 @@ class Evaluator:
         verbose: bool = False,
         compare_by_io=True,
         entities_to_keep: Optional[List[str]] = None,
+        allow_list: Set[str] = None,
     ):
         """
         Evaluate a PII detection model or a Presidio analyzer / recognizer
@@ -29,12 +29,14 @@ class Evaluator:
         level and not the sub-entity level
         :param entities_to_keep: List of entity names to focus the evaluator on (and ignore the rest).
         Default is None = all entities. If the provided model has a list of entities to keep,
-        this list would be used for evaluation.
+        this list would be used for evaluation
+        :param allow_list: Set of tokens to ignore when evaluating the model
         """
         self.model = model
         self.verbose = verbose
         self.compare_by_io = compare_by_io
         self.entities_to_keep = entities_to_keep
+        self.allow_list = allow_list
         if self.entities_to_keep is None and self.model.entities:
             self.entities_to_keep = self.model.entities
 
@@ -71,6 +73,19 @@ class Evaluator:
         if self.entities_to_keep:
             prediction = self._adjust_per_entities(prediction)
             new_annotation = self._adjust_per_entities(new_annotation)
+
+        prediction, new_annotation = self._filter_punctuation_errors(
+            tokens=tokens,
+            predictions=prediction,
+            annotations=new_annotation
+        )
+
+        prediction, new_annotation = self._filter_allow_list_tokens(
+            tokens=tokens,
+            predictions=prediction,
+            annotations=new_annotation
+        )
+
         for i in range(0, len(new_annotation)):
             results[(new_annotation[i], prediction[i])] += 1
 
@@ -348,6 +363,50 @@ class Evaluator:
         return ((1 + beta ** 2) * precision * recall) / (
             ((beta ** 2) * precision) + recall
         )
+
+    @staticmethod
+    def _filter_punctuation_errors(
+            tokens,
+            predictions: List[str],
+            annotations: List[str],
+            ignored_characters: str = ":()\"',\\/!?<>|="
+    ):
+        """
+        Filters out errors on punctuation tokens
+        :param tokens: list of tokens to check for punctuation errors
+        :param predictions: list of predictions for the tokens
+        :param annotations: list of annotations for the tokens
+        :return: adapted lists of predictions and annotations without punctuation errors
+        """
+        for token in tokens:
+            if (token.is_punct or token.is_space or str(token) in ignored_characters) \
+                    and annotations[token.i] != predictions[token.i]:
+                predictions[token.i] = "O"
+                annotations[token.i] = "O"
+
+        return predictions, annotations
+
+    def _filter_allow_list_tokens(
+            self,
+            tokens,
+            predictions: List[str],
+            annotations: List[str],
+    ):
+        """
+        Filters out tokens that are in the allow-list
+        :param tokens: list of tokens to check
+        :param predictions: list of predictions for the tokens
+        :param annotations: list of annotations for the tokens
+        """
+        if self.allow_list is None or len(self.allow_list) == 0:
+            return predictions, annotations
+
+        for token in tokens:
+            if token.text.lower() in self.allow_list:
+                predictions[token.i] = "O"  # filter out errors on allow-list tokens
+                annotations[token.i] = "O"
+
+        return predictions, annotations
 
     class Plotter:
         """
