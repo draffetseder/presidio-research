@@ -95,7 +95,7 @@ class ModelError:
 
     @staticmethod
     def get_errors_df(
-        errors=List["ModelError"], entity: List[str] = None, error_type: str = "FN"
+        errors=List["ModelError"], entity: List[str] = None, error_type: str = "ALL"
     ):
         """
         Get ModelErrors as pd.DataFrame
@@ -104,6 +104,8 @@ class ModelError:
             filtered_errors = ModelError.get_false_negatives(errors, entity)
         elif error_type == "FP":
             filtered_errors = ModelError.get_false_positives(errors, entity)
+        elif error_type == "ALL":
+            filtered_errors = errors
         else:
             raise ValueError("error_type should be either FP or FN")
 
