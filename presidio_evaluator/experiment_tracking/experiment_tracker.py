@@ -1,9 +1,12 @@
 import json
+import os
 import time
 from typing import Dict, List
 
 
 class ExperimentTracker:
+    EXPERIMENT_RESULTS_FOLDER = "results"
+
     def __init__(self):
         self.parameters = dict()
         self.metrics = dict()
@@ -46,8 +49,9 @@ class ExperimentTracker:
         pass
 
     def end(self):
+        os.makedirs(self.EXPERIMENT_RESULTS_FOLDER, exist_ok=True)
         datetime_val = time.strftime("%Y%m%d-%H%M%S")
-        filename = f"experiment_{datetime_val}.json"
+        filename = f"{self.EXPERIMENT_RESULTS_FOLDER}/experiment_{datetime_val}.json"
         print(f"saving experiment data to {filename}")
         with open(filename, 'w') as json_file:
             json.dump(self.__dict__, json_file)
