@@ -82,10 +82,10 @@ class PresidioAnalyzerWrapper(BaseModel):
         "NATIONALITY": "LOCATION",
         "LOCATION": "LOCATION",
         "IBAN_CODE": "IBAN_CODE",
-        "URL": "DOMAIN_NAME",
+        "URL": "URL",
         "US_SSN": "US_SSN",
         "IP_ADDRESS": "IP_ADDRESS",
-        "ORGANIZATION": "ORG",
+        "ORGANIZATION": "ORGANIZATION",
         "US_DRIVER_LICENSE": "US_DRIVER_LICENSE",
         "NRP": "NRP",
         "TITLE": "O",  # not supported
