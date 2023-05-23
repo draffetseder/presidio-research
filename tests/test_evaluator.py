@@ -31,6 +31,45 @@ def test_evaluator_simple():
     assert final_evaluation.pii_recall == 1
 
 
+def test_evaluator_ignore_punctuation():
+    prediction = ["O", "O", "O", "U-ANIMAL", "O", "O", "O", "O", "O", "U-ANIMAL", "O", "U-ANIMAL"]
+
+    model = MockTokensModel(prediction=prediction, entities_to_keep=["ANIMAL"])
+
+    evaluator = Evaluator(model=model)
+    sample = InputSample(
+        full_text="I am the walrus", masked="I am the [ANIMAL]", spans=None
+    )
+    sample.tokens = ["I", "am", "the", "walrus", " ", "!", "I", "am", "the", "walrus", " ", "!"]
+    sample.tags = ["O", "O", "O", "U-ANIMAL", "O", "U-ANIMAL", "O", "O", "O", "U-ANIMAL", "O", "O"]
+
+    evaluated = evaluator.evaluate_sample(sample, prediction)
+    final_evaluation = evaluator.calculate_score([evaluated])
+
+    assert final_evaluation.pii_precision == 1
+    assert final_evaluation.pii_recall == 1
+
+
+def test_evaluator_ignore_allow_list():
+    prediction = ["O", "O", "O", "O", "O", "U-ANIMAL"]
+    allow_list = {"walrus"}
+
+    model = MockTokensModel(prediction=prediction, entities_to_keep=["ANIMAL"])
+
+    evaluator = Evaluator(model=model, allow_list=allow_list)
+    sample = InputSample(
+        full_text="I am the walrus", masked="I am the [ANIMAL]", spans=None
+    )
+    sample.tokens = ["I", "am", "the", "walrus", "you", "penguin"]
+    sample.tags = ["O", "O", "O", "U-ANIMAL", "O", "U-ANIMAL"]
+
+    evaluated = evaluator.evaluate_sample(sample, prediction)
+    final_evaluation = evaluator.calculate_score([evaluated])
+
+    assert final_evaluation.pii_precision == 1
+    assert final_evaluation.pii_recall == 1
+
+
 def test_evaluate_sample_wrong_entities_to_keep_correct_statistics():
     prediction = ["O", "O", "O", "U-ANIMAL"]
     model = MockTokensModel(prediction=prediction)

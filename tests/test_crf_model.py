@@ -1,6 +1,3 @@
-import os
-import sys
-
 import pytest
 
 from presidio_evaluator import split_dataset

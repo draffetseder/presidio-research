@@ -165,7 +165,7 @@ def test_overlapping_entities_first_ends_in_mid_second():
     tag = ["PHONE_NUMBER", "US_PHONE_NUMBER"]
     expected = ['O', 'O', 'O', 'O', 'O', 'PHONE_NUMBER', 'US_PHONE_NUMBER',
                 'US_PHONE_NUMBER', 'US_PHONE_NUMBER',
-                 'O', 'O', 'O', 'O']
+                'O', 'O', 'O', 'O']
     io = span_to_tag(IO_SCHEME, text, start, end, tag, scores)
     assert io == expected
 
@@ -178,7 +178,7 @@ def test_overlapping_entities_second_embedded_in_first_with_lower_score():
     tag = ["PHONE_NUMBER", "US_PHONE_NUMBER"]
     expected = ['O', 'O', 'O', 'O', 'O', 'PHONE_NUMBER', 'PHONE_NUMBER',
                 'PHONE_NUMBER', 'PHONE_NUMBER',
-                 'O', 'O', 'O', 'O']
+                'O', 'O', 'O', 'O']
     io = span_to_tag(scheme=IO_SCHEME, text=text, starts=start, ends=end, tags=tag, scores=scores)
     assert io == expected
 
@@ -191,13 +191,13 @@ def test_overlapping_entities_second_embedded_in_first_has_higher_score():
     tag = ["PHONE_NUMBER", "US_PHONE_NUMBER"]
     expected = ['O', 'O', 'O', 'O', 'O', 'PHONE_NUMBER', 'US_PHONE_NUMBER',
                 'PHONE_NUMBER', 'PHONE_NUMBER',
-                 'O', 'O', 'O', 'O']
+                'O', 'O', 'O', 'O']
     io = span_to_tag(scheme=IO_SCHEME, text=text, starts=start, ends=end, tags=tag, scores=scores)
     assert io == expected
 
 
 def test_overlapping_entities_second_embedded_in_first_has_lower_score():
-    text= "My new phone number is 1 705 774 8720. Thanks, man"
+    text = "My new phone number is 1 705 774 8720. Thanks, man"
     start = [23, 25]
     end = [37, 28]
     scores = [0.6, 0.3]
@@ -216,7 +216,7 @@ def test_overlapping_entities_pyramid():
     scores = [0.6, 0.7, 0.8]
     tag = ["A1", "B2", "C3"]
     expected = ['O', 'O', 'O', 'O', 'O', 'A1', 'B2', 'C3', 'B2',
-                 'A1', 'O', 'O', 'O', 'O']
+                'A1', 'O', 'O', 'O', 'O']
     io = span_to_tag(scheme=IO_SCHEME, text=text, starts=start, ends=end, tags=tag, scores=scores)
     assert io == expected
 
@@ -255,5 +255,3 @@ def test_io_to_scheme(tags, expected_tags, scheme):
     assert actual_tags == expected_tags
 
 # fmt: on
-
-

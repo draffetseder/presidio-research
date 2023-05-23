@@ -31,6 +31,7 @@ def faker_span_result():
         template_id=3,
     )
 
+
 @pytest.fixture(scope="session")
 def faker_span_result_2():
     return FakerSpansResult(
@@ -40,16 +41,19 @@ def faker_span_result_2():
         template_id=4,
     )
 
+
 def test_update_entity_types(faker_span_result):
     records = [deepcopy(faker_span_result)]
-    FakerSpansResult.update_entity_types(records, {"name":"PERSON"})
+    FakerSpansResult.update_entity_types(records, {"name": "PERSON"})
     assert records[0].spans[0].type == "PERSON"
+
 
 def test_load_fakerspan_dataset_from_file(faker_span_result_2):
     dir_path = Path(__file__).parent
     records = FakerSpansResult.load_dataset_from_file(Path(dir_path, "data", "faker_spans.json"))
     assert len(records) == 2
     assert records[0] == faker_span_result_2
+
 
 def test_count_entities(faker_span_result, faker_span_result_2):
     counts = FakerSpansResult.count_entities([faker_span_result, faker_span_result_2])
@@ -66,16 +70,18 @@ def test_count_entities(faker_span_result, faker_span_result_2):
     assert len(counts) == 2
     assert all([ent[0] == "name" or ent[0] == "city" for ent in counts])
 
+
 def test_remove_unsupported_entities(faker_span_result, faker_span_result_2):
     input_sample_1 = InputSample.from_faker_spans_result(
         faker_span_result, create_tags_from_span=False
-    ) 
+    )
     input_sample_2 = InputSample.from_faker_spans_result(
         faker_span_result_2, create_tags_from_span=False
-    ) 
-    filtered = InputSample.remove_unsupported_entities([input_sample_1, input_sample_2], {"name":"PERSON"})
+    )
+    filtered = InputSample.remove_unsupported_entities([input_sample_1, input_sample_2], {"name": "PERSON"})
     assert len(filtered) == 1
     assert filtered[0].spans[0].entity_type == "name"
+
 
 def test_to_conll():
     import os
@@ -130,7 +136,6 @@ def test_to_spacy_file_and_back(small_dataset):
 
 
 def test_faker_spans_result_to_input_sample(faker_span_result):
-
     input_sample = InputSample.from_faker_spans_result(
         faker_span_result, create_tags_from_span=False
     )
@@ -170,7 +175,7 @@ def test_from_spacy_doc():
     ],
 )
 def test_spans_intersection(
-    start1, end1, start2, end2, intersection_length, ignore_entity_type
+        start1, end1, start2, end2, intersection_length, ignore_entity_type
 ):
     span1 = Span(
         entity_type="A", entity_value="123", start_position=start1, end_position=end1

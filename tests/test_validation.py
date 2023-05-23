@@ -104,7 +104,7 @@ def test_split_dataset_four_sets(mock_4_samples):
 
     # make sure all original template IDs are in the new sets
 
-    original_keys = set([1, 2, 3, 4])
+    original_keys = {1, 2, 3, 4}
     t1 = set([sample.template_id for sample in train])
     t2 = set([sample.template_id for sample in test])
     t3 = set([sample.template_id for sample in dev])
