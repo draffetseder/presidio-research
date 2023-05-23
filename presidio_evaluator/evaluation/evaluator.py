@@ -1,5 +1,6 @@
 from collections import Counter
 from pathlib import Path
+from spacy.tokens import Token
 from typing import Dict, List, Optional, Set
 
 import numpy as np
@@ -369,7 +370,7 @@ class Evaluator:
             tokens,
             predictions: List[str],
             annotations: List[str],
-            ignored_characters: str = ":()\"',\\/!?<>|="
+            ignored_characters: str = ":()$%&^\"',\\/.!?<>|= -_+@#*{}[];~`"
     ):
         """
         Filters out errors on punctuation tokens
@@ -378,11 +379,13 @@ class Evaluator:
         :param annotations: list of annotations for the tokens
         :return: adapted lists of predictions and annotations without punctuation errors
         """
-        for token in tokens:
-            if (token.is_punct or token.is_space or str(token) in ignored_characters) \
-                    and annotations[token.i] != predictions[token.i]:
-                predictions[token.i] = "O"
-                annotations[token.i] = "O"
+        ignored_characters = set(ignored_characters)
+
+        for i, token in enumerate(tokens):
+            if (isinstance(token, Token) and (token.is_punct or token.is_space)) or str(token) in ignored_characters:
+                if annotations[i] != predictions[i]:
+                    predictions[i] = "O"
+                    annotations[i] = "O"
 
         return predictions, annotations
 
@@ -401,10 +404,10 @@ class Evaluator:
         if self.allow_list is None or len(self.allow_list) == 0:
             return predictions, annotations
 
-        for token in tokens:
-            if token.text.lower() in self.allow_list:
-                predictions[token.i] = "O"  # filter out errors on allow-list tokens
-                annotations[token.i] = "O"
+        for i, token in enumerate(tokens):
+            if str(token).lower() in self.allow_list:
+                predictions[i] = "O"  # filter out errors on allow-list tokens
+                annotations[i] = "O"
 
         return predictions, annotations
 
